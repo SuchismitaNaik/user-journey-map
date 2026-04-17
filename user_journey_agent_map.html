@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Journey: AI Agent Design Patterns for Community Belonging</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #FAFBFF;
+    color: #1a1a2e;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 4px;
+    color: #1a1a2e;
+  }
+
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 36px;
+    font-weight: 400;
+  }
+
+  /* Theme legend */
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #4b5563;
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  /* Journey timeline */
+  .journey-wrapper {
+    position: relative;
+    padding: 0 0 16px 0;
+  }
+
+  /* The horizontal arrow */
+  .journey-track {
+    position: relative;
+    height: 140px;
+    margin: 0 40px 0 40px;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+
+  .journey-line {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #c4b5fd, #818cf8, #6366f1, #4f46e5, #4338ca);
+    border-radius: 2px;
+  }
+
+  .journey-arrow {
+    position: absolute;
+    right: -20px;
+    top: 30px;
+    width: 0; height: 0;
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    border-left: 20px solid #4338ca;
+  }
+
+  /* Stage markers on the line */
+  .stages {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    z-index: 2;
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .stage:hover { transform: scale(1.08); }
+
+  .stage-dot {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 4px solid #6366f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #6366f1;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.2);
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .stage.active .stage-dot {
+    background: #6366f1;
+    color: white;
+    box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+  }
+
+  .stage-label {
+    margin-top: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    color: #4b5563;
+    max-width: 130px;
+    line-height: 1.4;
+  }
+  .stage.active .stage-label { color: #4338ca; }
+
+  .stage-desc {
+    font-size: 10px;
+    color: #9ca3af;
+    text-align: center;
+    max-width: 130px;
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  /* Agent cards area */
+  .agents-panel {
+    margin-top: 40px;
+    min-height: 420px;
+    transition: all 0.3s;
+  }
+
+  .stage-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .stage-header .stage-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #6366f1;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .stage-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  .stage-context {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 20px;
+    margin-left: 44px;
+    line-height: 1.6;
+  }
+
+  .agents-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-left: 44px;
+  }
+
+  .agent-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 5px solid;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .agent-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  }
+
+  /* Theme colors */
+  .theme-barriers { border-left-color: #8b5cf6; }
+  .theme-barriers .agent-theme { color: #7c3aed; background: #f5f3ff; }
+
+  .theme-support { border-left-color: #ec4899; }
+  .theme-support .agent-theme { color: #db2777; background: #fdf2f8; }
+
+  .theme-expression { border-left-color: #f59e0b; }
+  .theme-expression .agent-theme { color: #d97706; background: #fffbeb; }
+
+  .theme-integrity { border-left-color: #10b981; }
+  .theme-integrity .agent-theme { color: #059669; background: #ecfdf5; }
+
+  .agent-theme {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+
+  .agent-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #1a1a2e;
+  }
+
+  .agent-card p {
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: #4b5563;
+  }
+
+  .agent-card .role-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-top: 10px;
+    margin-bottom: 4px;
+  }
+  .agent-card .member-need {
+    font-size: 11.5px;
+    color: #6366f1;
+    font-style: italic;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  /* Cross-cutting bar */
+  .crosscutting {
+    margin: 32px 0 0 0;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+    border: 1px solid #a7f3d0;
+    border-radius: 12px;
+  }
+  .crosscutting h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #065f46;
+    margin-bottom: 6px;
+  }
+  .crosscutting p {
+    font-size: 12.5px;
+    color: #047857;
+    line-height: 1.6;
+  }
+  .crosscutting-agents {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .crosscutting-chip {
+    background: white;
+    border: 1px solid #a7f3d0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    flex: 1;
+    min-width: 240px;
+  }
+  .crosscutting-chip h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #065f46;
+    margin-bottom: 4px;
+  }
+  .crosscutting-chip p {
+    font-size: 11.5px;
+    color: #047857;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .agents-grid { grid-template-columns: 1fr; margin-left: 0; }
+    .stage-context { margin-left: 0; }
+    .stage-label { font-size: 9px; max-width: 70px; }
+    .stage-dot { width: 32px; height: 32px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Member Journey: AI Agent Design Patterns for Community Belonging</h1>
+  <p class="subtitle">From newcomer to experienced member — how nine agent patterns support belonging at each stage</p>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div>Lowering Barriers</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ec4899"></div>Emotional & Social Support</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Expression & Sense-making</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>Community Integrity (cross-cutting)</div>
+  </div>
+
+  <!-- Journey Timeline -->
+  <div class="journey-wrapper">
+    <div class="journey-track">
+      <div class="journey-line"></div>
+      <div class="journey-arrow"></div>
+      <div class="stages" id="stages">
+        <!-- Stages populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent cards for selected stage -->
+  <div class="agents-panel" id="agentsPanel">
+    <!-- Populated by JS -->
+  </div>
+
+  <!-- Cross-cutting agents -->
+  <div class="crosscutting">
+    <h3>Cross-cutting Agents — Active Throughout the Entire Journey</h3>
+    <p>These agents protect community integrity at every stage, operating quietly in the background regardless of a member's experience level.</p>
+    <div class="crosscutting-agents">
+      <div class="crosscutting-chip">
+        <h4>Boundary &amp; Integrity Agent</h4>
+        <p>Detects scams, harassment, and coordinated harm. Supports moderators with evidence and suggested actions while preserving member dignity and minimizing public spectacle.</p>
+      </div>
+      <div class="crosscutting-chip">
+        <h4>Identity Mask &amp; Credit Keeper</h4>
+        <p>Manages the tension between visibility and anonymity — enabling pseudonymous participation, controlled identity disclosure, and reliable attribution of creative contributions.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const stages = [
+  {
+    num: 1,
+    label: "Discovery & Entry",
+    desc: "Finding the community",
+    context: "A new member discovers the community through shared interests — a song, a recommendation, a professional need. They arrive curious but uncertain: What is this place? How do people behave here? Will I fit in? The social cost of asking \"basic\" questions feels high.",
+    agents: [
+      {
+        name: "New-comer Bridge Agent",
+        theme: "barriers",
+        themeLabel: "Lowering Barriers",
+        desc: "Privately gathers and packages community knowledge so newcomers can learn norms without public exposure. Its four sub-agents work as a pipeline:",
+        role: "Sub-agents at this stage",
+        roleDesc: "User Proxy Agent (collects goals & comfort level) → Knowledge Curator (pulls canonical posts, wikis, rules) → Guide Writer (returns a personalized \"starter pack\" + channel routing)",
+        need: "\"I want to learn about this community without looking clueless.\""
+      }
+    ]
+  },
+  {
+    num: 2,
+    label: "Onboarding & Norm Learning",
+    desc: "Understanding the culture",
+    context: "The member has joined but is still learning the unwritten rules — what's celebrated, what's frowned upon, how sub-groups differ. They may inadvertently violate norms they were never taught, risking friction that erodes their fragile sense of belonging.",
+    agents: [
+      {
+        name: "New-comer Bridge Agent",
+        theme: "barriers",
+        themeLabel: "Lowering Barriers",
+        desc: "The Contribution Coach sub-agent activates here — creating low-stakes first contribution opportunities (answer a question, help someone, share a small artifact) to help the newcomer cross from observer to participant.",
+        role: "Key sub-agent",
+        roleDesc: "Contribution Coach — scaffolds the member's first meaningful participation",
+        need: "\"I want to contribute but I'm not sure what's appropriate.\""
+      },
+      {
+        name: "Norms & Expectations Steward",
+        theme: "barriers",
+        themeLabel: "Lowering Barriers",
+        desc: "Surfaces community norms at the moment they become relevant, through contextual nudges and illustrative examples rather than overwhelming rule lists.",
+        role: "Sub-agents at this stage",
+        roleDesc: "Listener (detects friction points) → Norm Synthesizer (drafts summaries from approved sources) → Nudge Writer (posts rate-limited reminders) → Norm Check Companion (normalizes uncertainty when members ask \"is this okay?\")",
+        need: "\"I accidentally said something wrong and I don't know why.\""
+      }
+    ]
+  },
+  {
+    num: 3,
+    label: "Building Connections",
+    desc: "Forming first relationships",
+    context: "The member begins to form relationships. They start sharing more about themselves — tentatively at first. They seek emotional resonance and want to know: Are there others like me here? Can I be vulnerable in this space?",
+    agents: [
+      {
+        name: "Support Companion Agent",
+        theme: "support",
+        themeLabel: "Emotional & Social Support",
+        desc: "Offers low-pressure, dignity-preserving support through gentle check-ins and reflective listening prompts. All interactions are opt-in and exit-controllable — members can pause or stop without explanation.",
+        role: "Key interaction mode",
+        roleDesc: "Private, non-intrusive outreach that points members toward community spaces and peer resources rather than attempting therapeutic intervention",
+        need: "\"I'm going through something but I don't want to announce it publicly.\""
+      },
+      {
+        name: "Vulnerability-Safe Story Circle",
+        theme: "support",
+        themeLabel: "Emotional & Social Support",
+        desc: "Creates structured, emotionally safe containers for sharing personal stories — with prompts, turn-taking facilitation, content warnings, and conservative retention policies.",
+        role: "Key design principle",
+        roleDesc: "Layered participation — members start with low-vulnerability prompts before being invited into deeper sharing",
+        need: "\"I want to share my story but I'm scared of how it'll be received.\""
+      }
+    ]
+  },
+  {
+    num: 4,
+    label: "Active Participation",
+    desc: "Regular engagement & expression",
+    context: "The member is now a regular participant. They create content, share interpretations, and want their contributions to be seen and valued. Belonging deepens through creative expression and collaborative meaning-making — but their work may get lost in the noise.",
+    agents: [
+      {
+        name: "Creative Signal Booster Agent",
+        theme: "expression",
+        themeLabel: "Expression & Sense-making",
+        desc: "Helps members express themselves in community-native formats (captions, threads, fan art, remixes) while preserving the creator's intent. Amplifies under-recognized contributions and supports accessibility by default.",
+        role: "Key design principle",
+        roleDesc: "Builds templates and scaffolds — never generates finished creative outputs. The creative voice remains the member's.",
+        need: "\"I made something meaningful but nobody saw it.\""
+      },
+      {
+        name: "Collective Sense-making Facilitator",
+        theme: "expression",
+        themeLabel: "Expression & Sense-making",
+        desc: "Structures the community's interpretive practices — aggregating diverse perspectives, surfacing connections between viewpoints, and facilitating pluralistic discussion rather than converging on a single \"correct\" reading.",
+        role: "Key interaction mode",
+        roleDesc: "Conversation starter, not topic authority — invites participation through varied prompts and surfaces minority perspectives alongside popular interpretations",
+        need: "\"I have a different take on this — does anyone else see it this way?\""
+      }
+    ]
+  },
+  {
+    num: 5,
+    label: "Deep Belonging & Mutual Care",
+    desc: "Sustained membership & leadership",
+    context: "The member now feels genuine belonging. They care about the community's health, actively support others, and may take on informal leadership roles. Their concern shifts from \"Do I belong?\" to \"How can I help others belong?\" and \"Is the community I love being sustained?\"",
+    agents: [
+      {
+        name: "Mutual Care Signal Router",
+        theme: "support",
+        themeLabel: "Emotional & Social Support",
+        desc: "Detects and routes care signals between members without public disclosure. Connects those who need support with willing helpers who have relevant experience — functioning as a behind-the-scenes matchmaker for mutual care.",
+        role: "Key design principle",
+        roleDesc: "Opt-in with clear availability boundaries — prevents helper burnout by distributing care labor and allowing helpers to specify capacity",
+        need: "\"I want to help but I don't know who needs it — and I don't want to burn out.\""
+      },
+      {
+        name: "Norms & Expectations Steward",
+        theme: "barriers",
+        themeLabel: "Lowering Barriers",
+        desc: "At this stage, experienced members contribute to norm evolution. The Listener sub-agent surfaces emerging norms for community review, and the Norm Check Companion helps members mentor newcomers by articulating implicit expectations.",
+        role: "Evolved role",
+        roleDesc: "Shifts from educating the member to empowering them as a norm-shaper — surfacing emerging patterns for community governance",
+        need: "\"The community is changing — how do we evolve our norms thoughtfully?\""
+      }
+    ]
+  }
+];
+
+// Render stages
+const stagesEl = document.getElementById('stages');
+stages.forEach((s, i) => {
+  const div = document.createElement('div');
+  div.className = 'stage' + (i === 0 ? ' active' : '');
+  div.dataset.index = i;
+  div.innerHTML = `
+    <div class="stage-dot">${s.num}</div>
+    <div class="stage-label">${s.label}</div>
+    <div class="stage-desc">${s.desc}</div>
+  `;
+  div.addEventListener('click', () => selectStage(i));
+  stagesEl.appendChild(div);
+});
+
+function selectStage(index) {
+  document.querySelectorAll('.stage').forEach((el, i) => {
+    el.classList.toggle('active', i === index);
+  });
+  renderAgents(index);
+}
+
+function renderAgents(index) {
+  const s = stages[index];
+  const panel = document.getElementById('agentsPanel');
+
+  let cards = s.agents.map(a => `
+    <div class="agent-card theme-${a.theme}">
+      <span class="agent-theme">${a.themeLabel}</span>
+      <h3>${a.name}</h3>
+      <p>${a.desc}</p>
+      <div class="role-label">${a.role}</div>
+      <p>${a.roleDesc}</p>
+      <div class="member-need">${a.need}</div>
+    </div>
+  `).join('');
+
+  panel.innerHTML = `
+    <div class="stage-header">
+      <div class="stage-num">${s.num}</div>
+      <h2>Stage ${s.num}: ${s.label}</h2>
+    </div>
+    <p class="stage-context">${s.context}</p>
+    <div class="agents-grid">${cards}</div>
+  `;
+}
+
+// Initial render
+renderAgents(0);
+</script>
+
+</body>
+</html>
